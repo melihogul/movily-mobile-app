@@ -54,9 +54,9 @@ const Search = () => {
               <Image source={icons.logo} className="w-12 h-10" />
             </View>
 
-            <View className="my-5">
+            <View className="my-10">
               <SearchBar
-                placeholder="Search movies..."
+                placeholder="Search for a movie"
                 value={searchQuery}
                 onChangeText={(text: string) => setSearchQuery(text)}
               />
