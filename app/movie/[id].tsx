@@ -1,6 +1,7 @@
 import { icons } from "@/constants/icons";
 import { fetchMovieDetails } from "@/services/api";
 import useFetch from "@/services/use-fetch";
+import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
@@ -37,6 +38,19 @@ const Details = () => {
             }}
             className="w-full h-[550px]"
             resizeMode="stretch"
+          />
+          <LinearGradient
+            colors={["transparent", "#030014"]}
+            start={{ x: 0.5, y: 0.7 }}
+            end={{ x: 0.5, y: 1 }}
+            style={{
+              position: "absolute",
+              left: 0,
+              right: 0,
+              top: 0,
+              bottom: 0,
+              zIndex: 10,
+            }}
           />
         </View>
         <View className="flex-col items-start justify-center mt-5 px-5">
