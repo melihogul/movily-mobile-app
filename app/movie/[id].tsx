@@ -79,7 +79,7 @@ const Details = () => {
   if (loading) {
     return (
       <View className="flex-1 bg-primary items-center justify-center">
-        <ActivityIndicator size="large" color="#0000ff" />
+        <ActivityIndicator size="large" color="#ab8bff" />
       </View>
     );
   }
@@ -122,6 +122,13 @@ const Details = () => {
               zIndex: 10,
             }}
           />
+
+          <TouchableOpacity
+            onPress={() => router.back()}
+            className="absolute top-12 left-5 z-20 size-10 items-center justify-center rounded-full bg-dark-200/50"
+          >
+            <Image source={icons.arrow} className="size-5" tintColor="white" />
+          </TouchableOpacity>
         </View>
         <View className="flex-col items-start justify-center mt-5 px-5">
           <View className="flex-row items-center justify-between w-full">
@@ -196,7 +203,7 @@ const Details = () => {
           shadowRadius: 3.84,
           elevation: 5,
         }}
-        onPress={router.back}
+        onPress={() => router.back()}
       >
         <Image
           source={icons.arrow}

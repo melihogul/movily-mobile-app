@@ -8,6 +8,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import React from "react";
 import { ActivityIndicator, FlatList, Image, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Index() {
   const router = useRouter();
@@ -40,7 +41,7 @@ export default function Index() {
 
   const renderHeader = () => (
     <View className="px-5 mt-5">
-      <Image source={icons.logo} className="w-12 h-10 mt-20 mb-5 mx-auto" />
+      <Image source={icons.logo} className="w-12 h-10 mb-5 mx-auto" />
 
       <SearchBar
         onPress={() => router.push("/search")}
@@ -85,28 +86,34 @@ export default function Index() {
     <View className="flex-1 bg-primary">
       <Image source={images.bg} className="absolute w-full z-0 h-full" />
 
-      <FlatList
-        data={movies}
-        renderItem={({ item }) => <MovieCard {...item} />}
-        keyExtractor={(item, index) => `${item.id}-${index}`}
-        numColumns={3}
-        columnWrapperStyle={{
-          justifyContent: "flex-start",
-          gap: 20,
-          paddingHorizontal: 20,
-          marginBottom: 15,
-        }}
-        contentContainerStyle={{ paddingBottom: 100 }}
-        showsVerticalScrollIndicator={false}
-        ListHeaderComponent={renderHeader}
-        ListFooterComponent={
-          isFetchingNextPage ? (
-            <ActivityIndicator size="small" color="#ab8bff" className="py-5" />
-          ) : null
-        }
-        onEndReached={handleLoadMore}
-        onEndReachedThreshold={0.5}
-      />
+      <SafeAreaView className="flex-1" edges={["top"]}>
+        <FlatList
+          data={movies}
+          renderItem={({ item }) => <MovieCard {...item} />}
+          keyExtractor={(item, index) => `${item.id}-${index}`}
+          numColumns={3}
+          columnWrapperStyle={{
+            justifyContent: "flex-start",
+            gap: 20,
+            paddingHorizontal: 20,
+            marginBottom: 15,
+          }}
+          contentContainerStyle={{ paddingBottom: 100 }}
+          showsVerticalScrollIndicator={false}
+          ListHeaderComponent={renderHeader}
+          ListFooterComponent={
+            isFetchingNextPage ? (
+              <ActivityIndicator
+                size="small"
+                color="#ab8bff"
+                className="py-5"
+              />
+            ) : null
+          }
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.5}
+        />
+      </SafeAreaView>
     </View>
   );
 }
