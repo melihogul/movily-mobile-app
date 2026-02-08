@@ -1,6 +1,13 @@
 import { icons } from "@/constants/icons";
 import { fetchMovieDetails } from "@/services/api";
-import { isMovieSaved, removeMovie, saveMovie } from "@/services/storage";
+import {
+  isMovieSaved,
+  isMovieWatched,
+  removeMovie,
+  removeWatchedMovie,
+  saveMovie,
+  saveWatchedMovie,
+} from "@/services/storage";
 import useFetch from "@/services/use-fetch";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -13,6 +20,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 interface MovieInfoProps {
   label: string;
@@ -32,6 +40,7 @@ const Details = () => {
   const router = useRouter();
   const { id } = useLocalSearchParams();
   const [isSaved, setIsSaved] = useState(false);
+  const [isWatched, setIsWatched] = useState(false);
 
   const {
     data: movie,
@@ -40,12 +49,16 @@ const Details = () => {
   } = useFetch(() => fetchMovieDetails(id as string));
 
   useEffect(() => {
-    checkIfSaved();
+    checkStatuses();
   }, [id]);
 
-  const checkIfSaved = async () => {
-    const saved = await isMovieSaved(Number(id));
+  const checkStatuses = async () => {
+    const [saved, watched] = await Promise.all([
+      isMovieSaved(Number(id)),
+      isMovieWatched(Number(id)),
+    ]);
     setIsSaved(saved);
+    setIsWatched(watched);
   };
 
   const toggleSave = async () => {
@@ -54,7 +67,7 @@ const Details = () => {
       setIsSaved(false);
     } else {
       if (movie) {
-        const savedMovie: Movie = {
+        const movieToSave: Movie = {
           id: movie.id,
           title: movie.title,
           poster_path: movie.poster_path ?? "",
@@ -70,8 +83,38 @@ const Details = () => {
           vote_count: movie.vote_count,
           adult: movie.adult,
         };
-        await saveMovie(savedMovie);
+        await saveMovie(movieToSave);
         setIsSaved(true);
+        setIsWatched(false); // Mutual exclusivity
+      }
+    }
+  };
+
+  const toggleWatched = async () => {
+    if (isWatched) {
+      await removeWatchedMovie(Number(id));
+      setIsWatched(false);
+    } else {
+      if (movie) {
+        const movieToWatch: Movie = {
+          id: movie.id,
+          title: movie.title,
+          poster_path: movie.poster_path ?? "",
+          vote_average: movie.vote_average,
+          release_date: movie.release_date,
+          overview: movie.overview ?? "",
+          backdrop_path: movie.backdrop_path ?? "",
+          genre_ids: movie.genres?.map((g) => g.id) || [],
+          original_language: movie.original_language,
+          original_title: movie.original_title,
+          popularity: movie.popularity,
+          video: movie.video,
+          vote_count: movie.vote_count,
+          adult: movie.adult,
+        };
+        await saveWatchedMovie(movieToWatch);
+        setIsWatched(true);
+        setIsSaved(false); // Mutual exclusivity
       }
     }
   };
@@ -89,7 +132,7 @@ const Details = () => {
       <View className="flex-1 bg-primary items-center justify-center">
         <Text className="text-white">Error loading movie details</Text>
         <TouchableOpacity
-          onPress={router.back}
+          onPress={() => router.back()}
           className="mt-4 bg-accent px-4 py-2 rounded-lg"
         >
           <Text className="text-white">Go Back</Text>
@@ -123,25 +166,41 @@ const Details = () => {
             }}
           />
 
-          <TouchableOpacity
-            onPress={() => router.back()}
-            className="absolute top-12 left-5 z-20 size-10 items-center justify-center rounded-full bg-dark-200/50"
-          >
-            <Image source={icons.arrow} className="size-5" tintColor="white" />
-          </TouchableOpacity>
+          <SafeAreaView className="absolute top-0 left-0 right-0 z-20">
+            <TouchableOpacity
+              onPress={() => router.back()}
+              className="ml-5 mt-2 size-10 items-center justify-center rounded-full bg-dark-200/50"
+            >
+              <Image
+                source={icons.arrow}
+                className="size-5"
+                tintColor="white"
+              />
+            </TouchableOpacity>
+          </SafeAreaView>
         </View>
         <View className="flex-col items-start justify-center mt-5 px-5">
           <View className="flex-row items-center justify-between w-full">
             <Text className="text-white font-bold text-xl flex-1 mr-2">
               {movie?.title}
             </Text>
-            <TouchableOpacity onPress={toggleSave}>
-              <Image
-                source={icons.save}
-                className="size-6"
-                tintColor={isSaved ? "#AB8BFF" : "#ffffff"}
-              />
-            </TouchableOpacity>
+
+            <View className="flex-row items-center gap-x-4">
+              <TouchableOpacity onPress={toggleWatched}>
+                <Image
+                  source={icons.play}
+                  className="size-6"
+                  tintColor={isWatched ? "#AB8BFF" : "#ffffff"}
+                />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={toggleSave}>
+                <Image
+                  source={icons.save}
+                  className="size-6"
+                  tintColor={isSaved ? "#AB8BFF" : "#ffffff"}
+                />
+              </TouchableOpacity>
+            </View>
           </View>
           <View className="flex-row items-center gap-x-1 mt-2">
             <Text className="text-light-200 text-sm">

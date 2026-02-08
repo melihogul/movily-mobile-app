@@ -80,6 +80,16 @@ const _Layout = () => {
         }}
       />
       <Tabs.Screen
+        name="watched"
+        options={{
+          title: "Watched",
+          headerShown: false,
+          tabBarIcon: ({ focused }) => (
+            <TabIcon focused={focused} icon={icons.play} title="Watched" />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="profile"
         options={{
           title: "Profile",
