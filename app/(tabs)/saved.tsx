@@ -3,12 +3,16 @@ import { images } from "@/constants/images";
 import { getSavedMovies } from "@/services/storage";
 import { useFocusEffect } from "expo-router";
 import React, { useCallback, useState } from "react";
-import { FlatList, Image, Text, View } from "react-native";
+import { ActivityIndicator, FlatList, Image, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+const PAGE_SIZE = 12;
+
 const Saved = () => {
-  const [savedMovies, setSavedMovies] = useState<Movie[]>([]);
+  const [allMovies, setAllMovies] = useState<Movie[]>([]);
+  const [displayedMovies, setDisplayedMovies] = useState<Movie[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -19,8 +23,24 @@ const Saved = () => {
   const loadSavedMovies = async () => {
     setIsLoading(true);
     const movies = await getSavedMovies();
-    setSavedMovies(movies);
+    setAllMovies(movies);
+    setDisplayedMovies(movies.slice(0, PAGE_SIZE));
     setIsLoading(false);
+  };
+
+  const handleLoadMore = () => {
+    if (displayedMovies.length < allMovies.length && !isFetchingMore) {
+      setIsFetchingMore(true);
+      // Simulate small delay for "infinite scroll" feel
+      setTimeout(() => {
+        const nextBatch = allMovies.slice(
+          displayedMovies.length,
+          displayedMovies.length + PAGE_SIZE,
+        );
+        setDisplayedMovies((prev) => [...prev, ...nextBatch]);
+        setIsFetchingMore(false);
+      }, 500);
+    }
   };
 
   return (
@@ -32,16 +52,18 @@ const Saved = () => {
         </Text>
 
         {isLoading ? (
-          <Text className="text-white text-center mt-10">Loading...</Text>
-        ) : savedMovies.length === 0 ? (
+          <View className="flex-1 justify-center items-center">
+            <ActivityIndicator size="large" color="#ab8bff" />
+          </View>
+        ) : allMovies.length === 0 ? (
           <View className="flex-1 justify-center items-center">
             <Text className="text-light-200 text-lg">No saved movies yet.</Text>
           </View>
         ) : (
           <FlatList
-            data={savedMovies}
+            data={displayedMovies}
             renderItem={({ item }) => <MovieCard {...item} />}
-            keyExtractor={(item) => item.id.toString()}
+            keyExtractor={(item, index) => `${item.id}-${index}`}
             numColumns={3}
             columnWrapperStyle={{
               justifyContent: "flex-start",
@@ -51,6 +73,17 @@ const Saved = () => {
             }}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingBottom: 100 }}
+            onEndReached={handleLoadMore}
+            onEndReachedThreshold={0.5}
+            ListFooterComponent={
+              isFetchingMore ? (
+                <ActivityIndicator
+                  size="small"
+                  color="#ab8bff"
+                  className="py-5"
+                />
+              ) : null
+            }
           />
         )}
       </SafeAreaView>
