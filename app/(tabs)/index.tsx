@@ -1,5 +1,4 @@
 import MovieCard from "@/components/movie-card";
-import SearchBar from "@/components/search-bar";
 import TrendingCard from "@/components/trending-card";
 import { icons } from "@/constants/icons";
 import { images } from "@/constants/images";
@@ -42,11 +41,6 @@ export default function Index() {
   const renderHeader = () => (
     <View className="px-5 mt-5">
       <Image source={icons.logo} className="w-12 h-10 mb-5 mx-auto" />
-
-      <SearchBar
-        onPress={() => router.push("/search")}
-        placeholder="Search for a movie"
-      />
 
       {isLoading ? (
         <ActivityIndicator

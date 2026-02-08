@@ -68,6 +68,7 @@ const Search = () => {
             marginBottom: 15,
           }}
           contentContainerStyle={{ paddingBottom: 100 }}
+          keyboardShouldPersistTaps="handled"
           ListHeaderComponent={
             <View className="px-5">
               <View className="w-full flex-row justify-center mt-10 items-center">
