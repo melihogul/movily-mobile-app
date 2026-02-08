@@ -4,88 +4,109 @@ import TrendingCard from "@/components/trending-card";
 import { icons } from "@/constants/icons";
 import { images } from "@/constants/images";
 import { fetchMovies } from "@/services/api";
-import useFetch from "@/services/use-fetch";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
-import {
-  ActivityIndicator,
-  FlatList,
-  Image,
-  ScrollView,
-  Text,
-  View,
-} from "react-native";
+import React from "react";
+import { ActivityIndicator, FlatList, Image, Text, View } from "react-native";
 
 export default function Index() {
   const router = useRouter();
+
   const {
-    data: movies,
-    loading: moviesLoading,
-    error: moviesError,
-  } = useFetch(() => fetchMovies({ query: "" }));
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    isError,
+    error,
+  } = useInfiniteQuery({
+    queryKey: ["movies"],
+    queryFn: ({ pageParam = 1 }) => fetchMovies({ query: "", page: pageParam }),
+    getNextPageParam: (lastPage, allPages) => {
+      // TMDB returns empty results or matches if no more pages
+      return lastPage.length > 0 ? allPages.length + 1 : undefined;
+    },
+    initialPageParam: 1,
+  });
+
+  const movies = data?.pages.flat() || [];
+
+  const handleLoadMore = () => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  };
+
+  const renderHeader = () => (
+    <View className="px-5 mt-5">
+      <Image source={icons.logo} className="w-12 h-10 mt-20 mb-5 mx-auto" />
+
+      <SearchBar
+        onPress={() => router.push("/search")}
+        placeholder="Search for a movie"
+      />
+
+      {isLoading ? (
+        <ActivityIndicator
+          size={"large"}
+          color={"#ab8bff"}
+          className="mt-10 self-center"
+        />
+      ) : isError ? (
+        <Text className="text-white text-center mt-5">
+          Error: {error?.message}
+        </Text>
+      ) : (
+        <>
+          <Text className="text-lg text-white font-bold mt-5 mb-3">
+            Trending Movies
+          </Text>
+          <FlatList
+            data={movies?.slice(0, 9)}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            ItemSeparatorComponent={() => <View className="w-4" />}
+            renderItem={({ item, index }) => (
+              <TrendingCard movie={item} index={index} />
+            )}
+            keyExtractor={(item) => `trending-${item.id}`}
+            className="mt-2"
+          />
+          <Text className="text-lg text-white font-bold mt-5 mb-3">
+            Latest Movies
+          </Text>
+        </>
+      )}
+    </View>
+  );
 
   return (
     <View className="flex-1 bg-primary">
-      <Image source={images.bg} className="absolute w-full z-0" />
-      <ScrollView
-        className="flex-1 px-5"
+      <Image source={images.bg} className="absolute w-full z-0 h-full" />
+
+      <FlatList
+        data={movies}
+        renderItem={({ item }) => <MovieCard {...item} />}
+        keyExtractor={(item, index) => `${item.id}-${index}`}
+        numColumns={3}
+        columnWrapperStyle={{
+          justifyContent: "flex-start",
+          gap: 20,
+          paddingHorizontal: 20,
+          marginBottom: 15,
+        }}
+        contentContainerStyle={{ paddingBottom: 100 }}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ minHeight: "100%", paddingBottom: 10 }}
-      >
-        <Image source={icons.logo} className="w-12 h-10 mt-20 mb-5 mx-auto" />
-
-        {moviesLoading ? (
-          <ActivityIndicator
-            size={"large"}
-            color={"#0000ff"}
-            className="mt-10 self-center"
-          />
-        ) : moviesError ? (
-          <Text>Error: {moviesError?.message}</Text>
-        ) : (
-          <View className="flex-1 mt-5">
-            <SearchBar
-              onPress={() => router.push("/search")}
-              placeholder="Search for a movie"
-            />
-
-            <>
-              <Text className="text-lg text-white font-bold mt-5 mb-3">
-                Trending Movies
-              </Text>
-              <FlatList
-                data={movies?.slice(0, 9)}
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                ItemSeparatorComponent={() => <View className="w-4" />}
-                renderItem={({ item, index }) => (
-                  <TrendingCard movie={item} index={index} />
-                )}
-                keyExtractor={(item) => item.id.toString()}
-                className="mt-2"
-              />
-            </>
-            <>
-              <Text className="text-lg text-white font-bold mt-5 mb-3">
-                Latest Movies
-              </Text>
-              <FlatList
-                data={movies}
-                renderItem={({ item }) => <MovieCard {...item} />}
-                keyExtractor={(item) => item.id.toString()}
-                numColumns={3}
-                columnWrapperStyle={{
-                  justifyContent: "flex-start",
-                  gap: 20,
-                  paddingRight: 5,
-                  marginBottom: 10,
-                }}
-                className="mt-2 pb-32"
-                scrollEnabled={false}
-              />
-            </>
-          </View>
-        )}
-      </ScrollView>
+        ListHeaderComponent={renderHeader}
+        ListFooterComponent={
+          isFetchingNextPage ? (
+            <ActivityIndicator size="small" color="#ab8bff" className="py-5" />
+          ) : null
+        }
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.5}
+      />
     </View>
   );
 }
