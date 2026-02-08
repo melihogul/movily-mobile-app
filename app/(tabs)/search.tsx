@@ -3,99 +3,135 @@ import SearchBar from "@/components/search-bar";
 import { icons } from "@/constants/icons";
 import { images } from "@/constants/images";
 import { fetchMovies } from "@/services/api";
-import useFetch from "@/services/use-fetch";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, FlatList, Image, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const Search = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
 
   const {
-    data: movies,
-    loading: moviesLoading,
-    error: moviesError,
-    refetch: loadMovies,
-    reset,
-  } = useFetch(() => fetchMovies({ query: searchQuery }), false);
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    isError,
+    error,
+  } = useInfiniteQuery({
+    queryKey: ["search-movies", debouncedQuery],
+    queryFn: ({ pageParam = 1 }) =>
+      fetchMovies({ query: debouncedQuery, page: pageParam }),
+    getNextPageParam: (lastPage, allPages) => {
+      return lastPage.length > 0 ? allPages.length + 1 : undefined;
+    },
+    initialPageParam: 1,
+    enabled: !!debouncedQuery.trim(),
+  });
+
+  const movies = data?.pages.flat() || [];
 
   useEffect(() => {
-    const timeoutId = setTimeout(async () => {
-      if (searchQuery.trim()) {
-        await loadMovies();
-      } else {
-        reset();
-      }
-    }, 800);
+    const timeoutId = setTimeout(() => {
+      setDebouncedQuery(searchQuery);
+    }, 500);
 
     return () => clearTimeout(timeoutId);
   }, [searchQuery]);
+
+  const handleLoadMore = () => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  };
+
   return (
     <View className="flex-1 bg-primary">
       <Image
         source={images.bg}
-        className="flex-1 absolute w-full z-0"
+        className="flex-1 absolute w-full z-0 h-full"
         resizeMode="cover"
       />
-      <FlatList
-        data={movies}
-        renderItem={({ item }) => <MovieCard {...item} />}
-        keyExtractor={(item) => item.id.toString()}
-        className="px-5"
-        numColumns={3}
-        columnWrapperStyle={{
-          justifyContent: "center",
-          gap: 16,
-          marginVertical: 16,
-        }}
-        contentContainerStyle={{ paddingBottom: 100 }}
-        ListHeaderComponent={
-          <>
-            <View className="w-full flex-row justify-center mt-20 items-center">
-              <Image source={icons.logo} className="w-12 h-10" />
-            </View>
 
-            <View className="my-10">
-              <SearchBar
-                placeholder="Search for a movie"
-                value={searchQuery}
-                onChangeText={(text: string) => setSearchQuery(text)}
-              />
-            </View>
-            {moviesLoading && (
-              <ActivityIndicator
-                size={"large"}
-                color={"#0000ff"}
-                className="my-3"
-              />
-            )}
+      <SafeAreaView className="flex-1" edges={["top"]}>
+        <FlatList
+          data={movies}
+          renderItem={({ item }) => <MovieCard {...item} />}
+          keyExtractor={(item) => item.id.toString()}
+          numColumns={3}
+          columnWrapperStyle={{
+            justifyContent: "flex-start",
+            gap: 20,
+            paddingHorizontal: 20,
+            marginBottom: 15,
+          }}
+          contentContainerStyle={{ paddingBottom: 100 }}
+          ListHeaderComponent={
+            <View className="px-5">
+              <View className="w-full flex-row justify-center mt-10 items-center">
+                <Image source={icons.logo} className="w-12 h-10" />
+              </View>
 
-            {moviesError && (
-              <Text className="text-red-500 px-5 my-3">
-                Error: {moviesError.message}
-              </Text>
-            )}
+              <View className="my-10">
+                <SearchBar
+                  placeholder="Search for a movie"
+                  value={searchQuery}
+                  onChangeText={(text: string) => setSearchQuery(text)}
+                />
+              </View>
 
-            {!moviesLoading &&
-              !moviesError &&
-              searchQuery.trim() &&
-              movies?.length > 0 && (
-                <Text className="text-xl text-white font-bold">
-                  Search results for{" "}
-                  <Text className="text-accent">{searchQuery}</Text>
+              {isLoading && (
+                <ActivityIndicator
+                  size={"large"}
+                  color={"#ab8bff"}
+                  className="my-3"
+                />
+              )}
+
+              {isError && (
+                <Text className="text-red-500 px-5 my-3">
+                  Error: {(error as Error)?.message}
                 </Text>
               )}
-          </>
-        }
-        ListEmptyComponent={
-          !moviesLoading && !moviesError ? (
-            <View className="mt-10 px-5">
-              <Text className="text-center text-gray-500">
-                {searchQuery.trim() ? "No movies found" : "Search for a movie"}
-              </Text>
+
+              {!isLoading &&
+                !isError &&
+                debouncedQuery.trim() &&
+                movies?.length > 0 && (
+                  <Text className="text-xl text-white font-bold mb-5">
+                    Search results for{" "}
+                    <Text className="text-accent">{debouncedQuery}</Text>
+                  </Text>
+                )}
             </View>
-          ) : null
-        }
-      />
+          }
+          ListEmptyComponent={
+            !isLoading && !isError ? (
+              <View className="mt-10 px-5">
+                <Text className="text-center text-light-200">
+                  {debouncedQuery.trim()
+                    ? "No movies found."
+                    : "Search for a movie to get started!"}
+                </Text>
+              </View>
+            ) : null
+          }
+          ListFooterComponent={
+            isFetchingNextPage ? (
+              <ActivityIndicator
+                size="small"
+                color="#ab8bff"
+                className="py-5"
+              />
+            ) : null
+          }
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.5}
+          showsVerticalScrollIndicator={false}
+        />
+      </SafeAreaView>
     </View>
   );
 };
