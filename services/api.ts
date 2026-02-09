@@ -57,3 +57,18 @@ export const fetchMovieDetails = async (
     throw error;
   }
 };
+
+export const fetchTrendingMovies = async (): Promise<Movie[]> => {
+  const response = await fetch(`${TMDB_CONFIG.BASE_URL}/trending/movie/day`, {
+    method: "GET",
+    headers: TMDB_CONFIG.headers,
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch trending movies");
+  }
+
+  const data = await response.json();
+
+  return data.results;
+};

@@ -8,7 +8,7 @@ import {
   saveMovie,
   saveWatchedMovie,
 } from "@/services/storage";
-import useFetch from "@/services/use-fetch";
+import { useQuery } from "@tanstack/react-query";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -43,9 +43,12 @@ const Details = () => {
 
   const {
     data: movie,
-    loading,
-    error,
-  } = useFetch(() => fetchMovieDetails(id as string));
+    isLoading: loading,
+    isError: error,
+  } = useQuery({
+    queryKey: ["movie-details", id],
+    queryFn: () => fetchMovieDetails(id as string),
+  });
 
   useEffect(() => {
     checkStatuses();

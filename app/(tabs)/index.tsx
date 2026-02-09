@@ -1,15 +1,21 @@
 import MovieCard from "@/components/movie-card";
 import TrendingCard from "@/components/trending-card";
 import { icons } from "@/constants/icons";
-import { fetchMovies } from "@/services/api";
-import { useInfiniteQuery } from "@tanstack/react-query";
-import { useRouter } from "expo-router";
+import { fetchMovies, fetchTrendingMovies } from "@/services/api";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import React from "react";
 import { ActivityIndicator, FlatList, Image, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Index() {
-  const router = useRouter();
+  const {
+    data: trendingMovies,
+    isLoading: trendingLoading,
+    isError: trendingError,
+  } = useQuery({
+    queryKey: ["trending-movies"],
+    queryFn: fetchTrendingMovies,
+  });
 
   const {
     data,
@@ -41,15 +47,15 @@ export default function Index() {
     <View className="px-5 mt-5">
       <Image source={icons.logo} className="w-12 h-10 mb-5 mx-auto" />
 
-      {isLoading ? (
+      {trendingLoading || isLoading ? (
         <ActivityIndicator
           size={"large"}
           color={"#ab8bff"}
           className="mt-10 self-center"
         />
-      ) : isError ? (
+      ) : trendingError || isError ? (
         <Text className="text-white text-center mt-5">
-          Error: {error?.message}
+          Error: {error?.message || "Failed to fetch movies"}
         </Text>
       ) : (
         <>
@@ -57,7 +63,7 @@ export default function Index() {
             Trending Movies
           </Text>
           <FlatList
-            data={movies?.slice(0, 9)}
+            data={trendingMovies?.slice(0, 9)}
             horizontal
             showsHorizontalScrollIndicator={false}
             ItemSeparatorComponent={() => <View className="w-4" />}
