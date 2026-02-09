@@ -20,7 +20,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 interface MovieInfoProps {
   label: string;
@@ -165,19 +164,6 @@ const Details = () => {
               zIndex: 10,
             }}
           />
-
-          <SafeAreaView className="absolute top-0 left-0 right-0 z-20">
-            <TouchableOpacity
-              onPress={() => router.back()}
-              className="ml-5 mt-2 size-10 items-center justify-center rounded-full bg-dark-200/50"
-            >
-              <Image
-                source={icons.arrow}
-                className="size-5"
-                tintColor="white"
-              />
-            </TouchableOpacity>
-          </SafeAreaView>
         </View>
         <View className="flex-col items-start justify-center mt-5 px-5">
           <View className="flex-row items-center justify-between w-full">
