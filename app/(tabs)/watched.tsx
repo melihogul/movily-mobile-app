@@ -1,9 +1,8 @@
 import MovieCard from "@/components/movie-card";
-import { images } from "@/constants/images";
 import { getWatchedMovies } from "@/services/storage";
 import { useFocusEffect } from "expo-router";
 import React, { useCallback, useState } from "react";
-import { ActivityIndicator, FlatList, Image, Text, View } from "react-native";
+import { ActivityIndicator, FlatList, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const PAGE_SIZE = 12;
@@ -45,7 +44,6 @@ const Watched = () => {
 
   return (
     <View className="flex-1 bg-primary">
-      <Image source={images.bg} className="absolute w-full h-full z-0" />
       <SafeAreaView className="flex-1 px-5" edges={["top"]}>
         <Text className="text-2xl font-bold text-white mt-5 mb-5">
           Watched Movies

@@ -12,7 +12,11 @@ const TrendingCard = ({
     <Link href={`/movie/${id}`} asChild>
       <TouchableOpacity className="w-32 relative pl-3">
         <Image
-          source={{ uri: `https://image.tmdb.org/t/p/w500${poster_path}` }}
+          source={{
+            uri: poster_path
+              ? `https://image.tmdb.org/t/p/w500${poster_path}`
+              : "https://www.critics.io/img/movies/poster-placeholder.png",
+          }}
           className="w-32 h-48 rounded-lg"
           resizeMode="cover"
         />

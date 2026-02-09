@@ -146,7 +146,9 @@ const Details = () => {
         <View>
           <Image
             source={{
-              uri: `https://image.tmdb.org/t/p/w500${movie?.poster_path}`,
+              uri: movie?.poster_path
+                ? `https://image.tmdb.org/t/p/w500${movie?.poster_path}`
+                : "https://www.critics.io/img/movies/poster-placeholder.png",
             }}
             className="w-full h-[550px]"
             resizeMode="stretch"

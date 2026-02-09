@@ -17,7 +17,7 @@ const MovieCard = ({
           source={{
             uri: poster_path
               ? `https://image.tmdb.org/t/p/w500${poster_path}`
-              : "https://placeholder.co/600x400/1a1a1a/ffffff.png",
+              : "https://www.critics.io/img/movies/poster-placeholder.png",
           }}
           className="w-full h-52 rounded-lg"
           resizeMode="cover"

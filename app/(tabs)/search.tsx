@@ -1,7 +1,6 @@
 import MovieCard from "@/components/movie-card";
 import SearchBar from "@/components/search-bar";
 import { icons } from "@/constants/icons";
-import { images } from "@/constants/images";
 import { fetchMovies } from "@/services/api";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import React, { useEffect, useState } from "react";
@@ -49,12 +48,6 @@ const Search = () => {
 
   return (
     <View className="flex-1 bg-primary">
-      <Image
-        source={images.bg}
-        className="flex-1 absolute w-full z-0 h-full"
-        resizeMode="cover"
-      />
-
       <SafeAreaView className="flex-1" edges={["top"]}>
         <FlatList
           data={movies}

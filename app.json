@@ -1,11 +1,11 @@
 {
   "expo": {
     "name": "Movily",
-    "slug": "expo-app",
+    "slug": "movily",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/logo.png",
-    "scheme": "expoapp",
+    "scheme": "movily",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -19,8 +19,7 @@
         "monochromeImage": "./assets/images/logo.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false,
-      "package": "com.ragn.expoapp"
+      "predictiveBackGestureEnabled": false
     },
     "web": {
       "output": "static",
@@ -44,12 +43,6 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    },
-    "extra": {
-      "router": {},
-      "eas": {
-        "projectId": "85f2a59c-13bc-4da2-9b1e-6e14feb512e4"
-      }
     }
   }
 }
