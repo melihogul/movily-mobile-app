@@ -1,4 +1,5 @@
 import { icons } from "@/constants/icons";
+import { images } from "@/constants/images";
 import { Link } from "expo-router";
 import React from "react";
 import { Image, Text, TouchableOpacity, View } from "react-native";
@@ -14,11 +15,13 @@ const MovieCard = ({
     <Link href={`/movie/${id}`} asChild>
       <TouchableOpacity className="w-[30%]">
         <Image
-          source={{
-            uri: poster_path
-              ? `https://image.tmdb.org/t/p/w500${poster_path}`
-              : "https://www.critics.io/img/movies/poster-placeholder.png",
-          }}
+          source={
+            poster_path
+              ? {
+                  uri: `https://image.tmdb.org/t/p/w500${poster_path}`,
+                }
+              : images.posterPlaceholder
+          }
           className="w-full h-52 rounded-lg"
           resizeMode="cover"
         />
@@ -37,7 +40,6 @@ const MovieCard = ({
           <Text className="text-xs text-light-300 font-medium mt-1">
             {release_date?.split("-")[0]}
           </Text>
-          <Text className="text-xs font-medium text-light-300">MOVIE</Text>
         </View>
       </TouchableOpacity>
     </Link>

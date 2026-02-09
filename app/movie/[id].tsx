@@ -1,4 +1,5 @@
 import { icons } from "@/constants/icons";
+import { images } from "@/constants/images";
 import { fetchMovieDetails } from "@/services/api";
 import {
   isMovieSaved,
@@ -148,11 +149,13 @@ const Details = () => {
       <ScrollView contentContainerStyle={{ paddingBottom: 80 }}>
         <View>
           <Image
-            source={{
-              uri: movie?.poster_path
-                ? `https://image.tmdb.org/t/p/w500${movie?.poster_path}`
-                : "https://www.critics.io/img/movies/poster-placeholder.png",
-            }}
+            source={
+              movie?.poster_path
+                ? {
+                    uri: `https://image.tmdb.org/t/p/w500${movie?.poster_path}`,
+                  }
+                : images.posterPlaceholder
+            }
             className="w-full h-[550px]"
             resizeMode="stretch"
           />
